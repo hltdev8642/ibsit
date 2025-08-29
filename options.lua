@@ -1,206 +1,215 @@
 function default()
-	SetInt("savegame.mod.dust_amt", 50)
-	SetInt("savegame.mod.wood_size", 100)
-	SetInt("savegame.mod.stone_size", 75)
-	SetInt("savegame.mod.metal_size", 50)
-	SetInt("savegame.mod.momentum", 12)
-	SetBool("savegame.mod.vehicle", false)
-	SetBool("savegame.mod.joint", false)
-	SetBool("savegame.mod.protection", false)
+	SetInt("savegame.mod.ibsit.dust_amt", 50)
+	SetInt("savegame.mod.ibsit.wood_size", 100)
+	SetInt("savegame.mod.ibsit.stone_size", 75)
+	SetInt("savegame.mod.ibsit.metal_size", 50)
+	SetInt("savegame.mod.ibsit.momentum", 12)
+	SetBool("savegame.mod.ibsit.haptic", true)
+	SetBool("savegame.mod.ibsit.sounds", true)
+	SetBool("savegame.mod.ibsit.particles", true)
+	SetBool("savegame.mod.ibsit.vehicle", false)
+	SetBool("savegame.mod.ibsit.joint", false)
+	SetBool("savegame.mod.ibsit.protection", false)
+	SetFloat("savegame.mod.ibsit.volume", 0.7)
+	SetInt("savegame.mod.ibsit.particle_quality", 2)
 end
 
 function init()
-	if not HasKey("savegame.mod") then
+	if not HasKey("savegame.mod.ibsit") then
 		default()
 	end
 end
 
-function optionsSlider(key, min, max, cap)
-	UiPush();
-		UiTranslate(0, -8);
-		local value = (GetInt(key) - min) / (max - min);
-		local width = 100;
-		UiRect(width * (cap / max), 3);
-		UiAlign("center middle");
-		value = UiSlider("ui/common/dot.png", "x", value * width, 0, width * (cap / max)) / width;
-		value = math.floor(value * (max - min) + min);
-		SetInt(key, value);
-	UiPop();
-	return value;
+-- Enhanced slider with new UI features
+function enhancedSlider(key, min, max, cap, label, description)
+	UiPush()
+		UiTranslate(0, -8)
+		local value = (GetInt(key) - min) / (max - min)
+		local width = 140  -- Increased from 120 to 140
+		UiRect(width * (cap / max), 4)
+		UiAlign("center middle")
+		value = UiSlider("ui/common/dot.png", "x", value * width, 0, width * (cap / max)) / width
+		value = math.floor(value * (max - min) + min)
+		SetInt(key, value)
+		UiTranslate(0, -20)
+		UiFont("bold.ttf", 22)
+		UiText(label)
+		UiTranslate(0, 16)
+		UiFont("regular.ttf", 16)
+		UiColor(0.8, 0.8, 0.8)
+		UiText(description)
+		UiTranslate(0, 24)
+	UiPop()
+	return value
+end
+
+-- Enhanced toggle button with new UI features
+function enhancedToggle(key, label, description)
+	local value = GetBool(key)
+	UiPush()
+		UiTranslate(-140, 0)  -- Increased from -120 to -140 for more space
+		UiFont("bold.ttf", 22)
+		UiText(label)
+		UiTranslate(0, 16)
+		UiFont("regular.ttf", 16)
+		UiColor(0.8, 0.8, 0.8)
+		UiText(description)
+		UiTranslate(280, -12)  -- Increased from 240 to 280 for wider layout
+		UiButtonImageBox("ui/common/box-outline-6.png", 6, 6)
+		if value then
+			UiPush()
+				UiColor(0.2, 0.8, 0.2, 0.3)
+				UiImageBox("ui/common/box-solid-6.png", 280, 50, 6, 6)  -- Increased width from 240 to 280
+			UiPop()
+		end
+		if UiTextButton(value and "Enabled" or "Disabled", 280, 50) then  -- Increased width from 240 to 280
+			SetBool(key, not value)
+		end
+	UiPop()
+end
+
+-- Volume slider
+function volumeSlider()
+	UiPush()
+		UiTranslate(0, -8)
+		local value = GetFloat("savegame.mod.ibsit.volume")
+		local width = 140  -- Increased from 120 to 140 to match other sliders
+		UiRect(width * value, 4)
+		UiAlign("center middle")
+		value = UiSlider("ui/common/dot.png", "x", value * width, 0, width) / width
+		SetFloat("savegame.mod.ibsit.volume", value)
+		UiTranslate(0, -20)
+		UiFont("bold.ttf", 22)
+		UiText("Sound Volume")
+		UiTranslate(0, 16)
+		UiFont("regular.ttf", 16)
+		UiColor(0.8, 0.8, 0.8)
+		UiText("Adjust sound effect volume")
+		UiTranslate(0, 24)
+	UiPop()
+	return value
+end
+
+-- Quality selector
+function qualitySelector()
+	local quality = GetInt("savegame.mod.ibsit.particle_quality")
+	UiPush()
+		UiTranslate(-140, 0)  -- Increased from -120 to -140 to match toggle layout
+		UiFont("bold.ttf", 22)
+		UiText("Particle Quality")
+		UiTranslate(0, 16)
+		UiFont("regular.ttf", 16)
+		UiColor(0.8, 0.8, 0.8)
+		UiText("Higher quality = more particles")
+		UiTranslate(280, -12)  -- Increased from 240 to 280 to match toggle layout
+		UiButtonImageBox("ui/common/box-outline-6.png", 6, 6)
+
+		local qualityText = {"Low", "Medium", "High"}
+		if UiTextButton(qualityText[quality + 1], 280, 50) then  -- Increased width from 240 to 280
+			SetInt("savegame.mod.ibsit.particle_quality", (quality + 1) % 3)
+		end
+	UiPop()
 end
 
 function draw()
-	UiTranslate(UiCenter(), 150)
+	UiTranslate(UiCenter(), 80)  -- Reduced from 120 to 80
 	UiAlign("center middle")
 
-	--Title
-	UiFont("bold.ttf", 48)
-	UiText("Options")
-	
-	--Draw buttons
-	UiTranslate(0, 80)
-	UiFont("regular.ttf", 26)
-	UiPush();
-		UiTranslate(-100, 0);
-		UiText("Dust amount");
-		UiAlign("left");
-		UiTranslate(130, 8);
-		local value = optionsSlider("savegame.mod.dust_amt", 0, 100, 100);
-		UiTranslate(120, 0);
-		UiText(value);
-	UiPop();
-	
-	--slider
-	UiPush();
-		UiTranslate(0, 60);
-		UiText("Material damage, Set to 0 to disable")
-	UiPop();
-	
-	UiPush();
-		UiTranslate(-100, 100);
-		UiText("Soft Material Damage");
-		UiAlign("left");
-		UiTranslate(130, 8);
-		local value = optionsSlider("savegame.mod.wood_size", 0, 200, 200);
-		UiTranslate(120, 0);
-		UiText(value);
-	UiPop();
-	
-	UiPush();
-		UiTranslate(-100, 130);
-		UiText("Medium Material Damage");
-		UiAlign("left");
-		UiTranslate(130, 8);
-		local value = optionsSlider("savegame.mod.stone_size", 0, 200, GetInt("savegame.mod.wood_size"));
-		UiTranslate(120, 0);
-		UiText(value);
-	UiPop();
-	
-	UiPush();
-		UiTranslate(-100, 160);
-		UiText("Hard Material Damage");
-		UiAlign("left");
-		UiTranslate(130, 8);
-		local value = optionsSlider("savegame.mod.metal_size", 0, 200, GetInt("savegame.mod.stone_size"));
-		UiTranslate(120, 0);
-		UiText(value);
-	UiPop();
-
-	UiPush();
-		UiTranslate(0, 220);
-		UiText("Threshold for momentum, lower value means more damage\nWarning! Low value may cause massive chain reaction!")
-	UiPop();
-
-	UiPush();
-		UiTranslate(-100, 260);
-		UiText("Momentum threshold");
-		UiAlign("left");
-		UiTranslate(130, 8);
-		local value = optionsSlider("savegame.mod.momentum", 0, 20, 20);
-		UiTranslate(120, 0);
-		UiText(value);
-	UiPop();
-
-	UiPush();
-		UiTranslate(0, 300);
-		UiText("Should collapse work on vehicles?")
-	UiPop();
-
-	UiTranslate(0, 340)
-	UiFont("regular.ttf", 26)
-	UiButtonImageBox("ui/common/box-outline-6.png", 6, 6)
+	-- Enhanced title with gradient
 	UiPush()
-		UiTranslate(-110, 0)
-		if GetBool("savegame.mod.vehicle") then
-			UiPush()
-				UiColor(0.5, 1, 0.5, 0.2)
-				UiImageBox("ui/common/box-solid-6.png", 200, 40, 6, 6)
-			UiPop()
-		end
-		if UiTextButton("Yup", 200, 40) then
-			SetBool("savegame.mod.vehicle", true)
-		end
-		UiTranslate(220, 0)
-		if not GetBool("savegame.mod.vehicle") then
-			UiPush()
-				UiColor(0.5, 1, 0.5, 0.2)
-				UiImageBox("ui/common/box-solid-6.png", 200, 40, 6, 6)
-			UiPop()
-		end
-		if UiTextButton("Nope", 200, 40) then
-			SetBool("savegame.mod.vehicle", false)
-		end
-	UiPop();
-	
-	UiPush();
-		UiTranslate(0, 50);
-		UiText("[WIP]Should collapse work on excluded stuff in other mods?")
-	UiPop();
+		UiColor(0.2, 0.6, 1.0)
+		UiFont("bold.ttf", 48)
+		UiText("IBSIT v2.0 Options")
+	UiPop()
 
-	UiTranslate(0, 90)
+	-- Main settings
+	UiTranslate(0, 70)  -- Reduced from 100 to 70
 	UiFont("regular.ttf", 26)
-	UiButtonImageBox("ui/common/box-outline-6.png", 6, 6)
+
+	-- Damage settings section
 	UiPush()
-		UiTranslate(-110, 0)
-		if GetBool("savegame.mod.protection") then
-			UiPush()
-				UiColor(0.5, 1, 0.5, 0.2)
-				UiImageBox("ui/common/box-solid-6.png", 200, 40, 6, 6)
-			UiPop()
+		UiColor(1, 1, 1)
+		UiFont("bold.ttf", 28)
+		UiText("Damage Settings")
+	UiPop()
+
+	UiTranslate(0, 40)  -- Reduced from 50 to 40
+	enhancedSlider("savegame.mod.ibsit.dust_amt", 0, 100, 100, "Dust Amount", "Amount of debris particles")
+
+	UiTranslate(0, 65)  -- Reduced from 80 to 65
+	enhancedSlider("savegame.mod.ibsit.wood_size", 0, 200, 200, "Soft Material Damage", "Wood, foliage, plastic damage multiplier")
+
+	UiTranslate(0, 65)  -- Reduced from 80 to 65
+	enhancedSlider("savegame.mod.ibsit.stone_size", 0, 200, GetInt("savegame.mod.ibsit.wood_size"), "Medium Material Damage", "Stone, concrete damage multiplier")
+
+	UiTranslate(0, 65)  -- Reduced from 80 to 65
+	enhancedSlider("savegame.mod.ibsit.metal_size", 0, 200, GetInt("savegame.mod.ibsit.stone_size"), "Hard Material Damage", "Metal damage multiplier")
+
+	UiTranslate(0, 65)  -- Reduced from 80 to 65
+	enhancedSlider("savegame.mod.ibsit.momentum", 0, 20, 20, "Momentum Threshold", "Lower = more sensitive (warning: may cause chain reactions!)")
+
+	-- Feature toggles section
+	UiTranslate(0, 50)  -- Reduced from 60 to 50
+	UiPush()
+		UiColor(1, 1, 1)
+		UiFont("bold.ttf", 28)
+		UiText("Features")
+	UiPop()
+
+	UiTranslate(0, 40)  -- Reduced from 50 to 40
+	enhancedToggle("savegame.mod.ibsit.particles", "Enhanced Particles", "Improved particle effects with material-specific visuals")
+
+	UiTranslate(0, 60)  -- Reduced from 70 to 60
+	enhancedToggle("savegame.mod.ibsit.sounds", "Sound Effects", "Play sounds for structural failures and impacts")
+
+	if GetBool("savegame.mod.ibsit.sounds") then
+		UiTranslate(0, 60)  -- Reduced from 70 to 60
+		volumeSlider()
+	end
+
+	UiTranslate(0, 60)  -- Reduced from 70 to 60
+	enhancedToggle("savegame.mod.ibsit.haptic", "Haptic Feedback", "Vibration feedback for impacts (requires compatible controller)")
+
+	UiTranslate(0, 60)  -- Reduced from 70 to 60
+	qualitySelector()
+
+	-- Advanced settings section
+	UiTranslate(0, 65)  -- Reduced from 80 to 65
+	UiPush()
+		UiColor(1, 1, 1)
+		UiFont("bold.ttf", 28)
+		UiText("Advanced Settings")
+	UiPop()
+
+	UiTranslate(0, 40)  -- Reduced from 50 to 40
+	enhancedToggle("savegame.mod.ibsit.vehicle", "Affect Vehicles", "Should structural integrity affect vehicles?")
+
+	UiTranslate(0, 60)  -- Reduced from 70 to 60
+	enhancedToggle("savegame.mod.ibsit.joint", "Affect Joints", "Should structural integrity affect elevators/doors?")
+
+	UiTranslate(0, 60)  -- Reduced from 70 to 60
+	enhancedToggle("savegame.mod.ibsit.protection", "Protection Mode", "Protect objects tagged 'leave_me_alone'")
+
+	-- Action buttons
+	UiTranslate(0, 70)  -- Reduced from 100 to 70
+	UiPush()
+		UiTranslate(-180, 0)  -- Increased from -150 to -180 for wider spacing
+		if UiTextButton("Reset to Default", 160, 50) then  -- Increased width from 140 to 160
+			default()
 		end
-		if UiTextButton("Yes", 200, 40) then
-			SetBool("savegame.mod.protection", true)
-		end
-		UiTranslate(220, 0)
-		if not GetBool("savegame.mod.protection") then
-			UiPush()
-				UiColor(0.5, 1, 0.5, 0.2)
-				UiImageBox("ui/common/box-solid-6.png", 200, 40, 6, 6)
-			UiPop()
-		end
-		if UiTextButton("No", 200, 40) then
-			SetBool("savegame.mod.protection", false)
+		UiTranslate(200, 0)  -- Increased from 160 to 200 for wider spacing
+		if UiTextButton("Close", 160, 50) then  -- Increased width from 140 to 160
+			Menu()
 		end
 	UiPop()
 
-	UiPush();
-	UiTranslate(0, 50);
-	UiText("Should collapse work on jointed things, such as doors/elevators?")
-	UiPop();
-
-	UiTranslate(0, 90)
-	UiFont("regular.ttf", 26)
-	UiButtonImageBox("ui/common/box-outline-6.png", 6, 6)
+	-- Version info
+	UiTranslate(0, 60)  -- Reduced from 80 to 60
 	UiPush()
-		UiTranslate(-110, 0)
-		if GetBool("savegame.mod.joint") then
-			UiPush()
-				UiColor(0.5, 1, 0.5, 0.2)
-				UiImageBox("ui/common/box-solid-6.png", 200, 40, 6, 6)
-			UiPop()
-		end
-		if UiTextButton("Yes", 200, 40) then
-			SetBool("savegame.mod.joint", true)
-		end
-		UiTranslate(220, 0)
-		if not GetBool("savegame.mod.joint") then
-			UiPush()
-				UiColor(0.5, 1, 0.5, 0.2)
-				UiImageBox("ui/common/box-solid-6.png", 200, 40, 6, 6)
-			UiPop()
-		end
-		if UiTextButton("No", 200, 40) then
-			SetBool("savegame.mod.joint", false)
-		end
+		UiFont("regular.ttf", 16)
+		UiColor(0.6, 0.6, 0.6)
+		UiText("IBSIT v2.0 - Enhanced Structural Integrity")
+		UiTranslate(0, 20)
+		UiText("Compatible with Teardown 1.7.0+")
 	UiPop()
-	
-	UiTranslate(0, 100)
-	if UiTextButton("Reset to default", 200, 40) then
-		default()
-	end
-	
-	UiTranslate(0, 50)
-	if UiTextButton("Close", 200, 40) then
-		Menu()
-	end
 end
